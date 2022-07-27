@@ -1,21 +1,16 @@
 import express from "express"
 import dotenv from "dotenv"
-import { getSchema } from "./schema"
 import { ApolloServer } from "apollo-server-express"
-import { getPrismaClient } from "./db"
-import { IContext } from "./interface"
+import { context } from "./context"
+import { getSchema } from "./graphql/schema"
 
 const main = async () => {
 	dotenv.config()
-
 	const app = express()
 
-	const schema = getSchema()
-	const prisma = getPrismaClient()
-
 	const apolloServer = new ApolloServer({
-		schema,
-		context: ({ req, res }): IContext => ({ req, res, prisma }),
+		schema: getSchema(),
+		context,
 	})
 
 	await apolloServer.start()

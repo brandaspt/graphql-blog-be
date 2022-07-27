@@ -3,9 +3,23 @@
 
 
 type Mutation {
-  registerUser(email: String, name: String, password: String): Boolean
+  registerUser(email: String!, name: String!, password: String!): User!
 }
 
 type Query {
-  hello: String
+  getUser(id: Int!): User
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+type User {
+  createdAt: Float!
+  email: String!
+  id: Int!
+  name: String!
+  role: Role!
+  updatedAt: Float!
 }
