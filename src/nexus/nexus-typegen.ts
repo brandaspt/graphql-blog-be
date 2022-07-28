@@ -4,9 +4,24 @@
  */
 
 
-import type { Context } from "./../src/context"
-
-
+import type { Context } from "./../context"
+import type { core } from "nexus"
+declare global {
+  interface NexusGenCustomInputMethods<TypeName extends string> {
+    /**
+     * A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+     */
+    date<FieldName extends string>(fieldName: FieldName, opts?: core.CommonInputFieldConfig<TypeName, FieldName>): void // "DateTime";
+  }
+}
+declare global {
+  interface NexusGenCustomOutputMethods<TypeName extends string> {
+    /**
+     * A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+     */
+    date<FieldName extends string>(fieldName: FieldName, ...opts: core.ScalarOutSpread<TypeName, FieldName>): void // "DateTime";
+  }
+}
 
 
 declare global {
@@ -26,18 +41,19 @@ export interface NexusGenScalars {
   Float: number
   Boolean: boolean
   ID: string
+  DateTime: any
 }
 
 export interface NexusGenObjects {
   Mutation: {};
   Query: {};
   User: { // root type
-    createdAt: number; // Float!
+    createdAt: NexusGenScalars['DateTime']; // DateTime!
     email: string; // String!
     id: number; // Int!
     name: string; // String!
     role: NexusGenEnums['Role']; // Role!
-    updatedAt: number; // Float!
+    updatedAt: NexusGenScalars['DateTime']; // DateTime!
   }
 }
 
@@ -59,12 +75,12 @@ export interface NexusGenFieldTypes {
     getUser: NexusGenRootTypes['User'] | null; // User
   }
   User: { // field return type
-    createdAt: number; // Float!
+    createdAt: NexusGenScalars['DateTime']; // DateTime!
     email: string; // String!
     id: number; // Int!
     name: string; // String!
     role: NexusGenEnums['Role']; // Role!
-    updatedAt: number; // Float!
+    updatedAt: NexusGenScalars['DateTime']; // DateTime!
   }
 }
 
@@ -76,12 +92,12 @@ export interface NexusGenFieldTypeNames {
     getUser: 'User'
   }
   User: { // field return type name
-    createdAt: 'Float'
+    createdAt: 'DateTime'
     email: 'String'
     id: 'Int'
     name: 'String'
     role: 'Role'
-    updatedAt: 'Float'
+    updatedAt: 'DateTime'
   }
 }
 

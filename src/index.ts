@@ -1,11 +1,9 @@
 import express from "express"
-import dotenv from "dotenv"
 import { ApolloServer } from "apollo-server-express"
 import { context } from "./context"
 import { getSchema } from "./graphql/schema"
 
 const main = async () => {
-	dotenv.config()
 	const app = express()
 
 	const apolloServer = new ApolloServer({

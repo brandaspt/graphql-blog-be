@@ -1,9 +1,7 @@
-import { User } from "@prisma/client"
 import {
 	enumType,
 	intArg,
 	mutationField,
-	nonNull,
 	nullable,
 	objectType,
 	queryField,
@@ -20,8 +18,8 @@ export const UserType = objectType({
 		t.string("name")
 		t.string("email")
 		t.field("role", { type: "Role" })
-		t.float("createdAt")
-		t.float("updatedAt")
+		t.date("createdAt")
+		t.date("updatedAt")
 	},
 })
 
@@ -30,13 +28,13 @@ export const UserType = objectType({
 export const getUser = queryField("getUser", {
 	type: nullable(UserType),
 	args: {
-		id: nonNull(intArg()),
+		id: intArg(),
 	},
-	resolve: (_, { id }: Pick<User, "id">, { prisma }) =>
+	resolve: async (_, { id }, { prisma }) =>
 		prisma.user.findFirst({ where: { id } }),
 })
 
-// Mutation
+// Mutations
 
 export const registerUser = mutationField("registerUser", {
 	type: UserType,
@@ -45,19 +43,15 @@ export const registerUser = mutationField("registerUser", {
 		email: stringArg(),
 		password: stringArg(),
 	},
-	resolve: async (
-		_,
-		{ email, name, password }: Pick<User, "email" | "name" | "password">,
-		{ prisma }
-	) => {
+	resolve: async (_, { email, name, password }, { prisma }) => {
 		try {
 			const hashedPassword = await hashPassword(password)
-			return prisma.user.create({
+			return await prisma.user.create({
 				data: { email, name, password: hashedPassword },
 			})
 		} catch (err) {
 			console.error(err)
-			return new Error("Error creating user")
+			throw new Error("Error creating user")
 		}
 	},
 })
