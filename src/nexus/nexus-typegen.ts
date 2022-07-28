@@ -50,7 +50,7 @@ export interface NexusGenObjects {
   User: { // root type
     createdAt: NexusGenScalars['DateTime']; // DateTime!
     email: string; // String!
-    id: number; // Int!
+    id: string; // String!
     name: string; // String!
     role: NexusGenEnums['Role']; // Role!
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
@@ -69,6 +69,9 @@ export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars & NexusGenEnu
 
 export interface NexusGenFieldTypes {
   Mutation: { // field return type
+    changeUserRole: NexusGenRootTypes['User']; // User!
+    login: boolean; // Boolean!
+    logout: boolean; // Boolean!
     registerUser: NexusGenRootTypes['User']; // User!
   }
   Query: { // field return type
@@ -77,7 +80,7 @@ export interface NexusGenFieldTypes {
   User: { // field return type
     createdAt: NexusGenScalars['DateTime']; // DateTime!
     email: string; // String!
-    id: number; // Int!
+    id: string; // String!
     name: string; // String!
     role: NexusGenEnums['Role']; // Role!
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
@@ -86,6 +89,9 @@ export interface NexusGenFieldTypes {
 
 export interface NexusGenFieldTypeNames {
   Mutation: { // field return type name
+    changeUserRole: 'User'
+    login: 'Boolean'
+    logout: 'Boolean'
     registerUser: 'User'
   }
   Query: { // field return type name
@@ -94,7 +100,7 @@ export interface NexusGenFieldTypeNames {
   User: { // field return type name
     createdAt: 'DateTime'
     email: 'String'
-    id: 'Int'
+    id: 'String'
     name: 'String'
     role: 'Role'
     updatedAt: 'DateTime'
@@ -103,6 +109,14 @@ export interface NexusGenFieldTypeNames {
 
 export interface NexusGenArgTypes {
   Mutation: {
+    changeUserRole: { // args
+      id: string; // String!
+      role: NexusGenEnums['Role']; // Role!
+    }
+    login: { // args
+      email: string; // String!
+      password: string; // String!
+    }
     registerUser: { // args
       email: string; // String!
       name: string; // String!
@@ -111,7 +125,7 @@ export interface NexusGenArgTypes {
   }
   Query: {
     getUser: { // args
-      id: number; // Int!
+      id: string; // String!
     }
   }
 }

@@ -1,20 +1,19 @@
 import {
 	enumType,
-	intArg,
 	mutationField,
 	nullable,
 	objectType,
 	queryField,
 	stringArg,
 } from "nexus"
-import { hashPassword } from "../utils/password"
+import { hashPassword, isAdmin } from "../utils"
 
 export const RoleType = enumType({ name: "Role", members: ["USER", "ADMIN"] })
 
 export const UserType = objectType({
 	name: "User",
 	definition(t) {
-		t.int("id")
+		t.string("id")
 		t.string("name")
 		t.string("email")
 		t.field("role", { type: "Role" })
@@ -28,7 +27,7 @@ export const UserType = objectType({
 export const getUser = queryField("getUser", {
 	type: nullable(UserType),
 	args: {
-		id: intArg(),
+		id: stringArg(),
 	},
 	resolve: async (_, { id }, { prisma }) =>
 		prisma.user.findFirst({ where: { id } }),
@@ -53,5 +52,20 @@ export const registerUser = mutationField("registerUser", {
 			console.error(err)
 			throw new Error("Error creating user")
 		}
+	},
+})
+
+export const changeUserRole = mutationField("changeUserRole", {
+	type: UserType,
+	args: {
+		id: stringArg(),
+		role: RoleType,
+	},
+	resolve: async (_, { id, role }, { prisma, session }) => {
+		const userMe = await prisma.user.findFirst({
+			where: { id: session.userId },
+		})
+		if (!isAdmin(userMe?.role)) throw new Error("Not Authorized")
+		return prisma.user.update({ where: { id }, data: { role } })
 	},
 })
