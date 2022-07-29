@@ -1,5 +1,5 @@
-import { mutationField, objectType, stringArg } from "nexus"
-import { adminOnly } from "../authorization"
+import { idArg, mutationField, objectType, stringArg } from "nexus"
+import { adminOnly, isMyPost } from "../authorization"
 import { UserType } from "./user"
 
 export const PostType = objectType({
@@ -31,5 +31,19 @@ export const createPost = mutationField("createPost", {
 	resolve: (_, { title, content }, { prisma, session }) =>
 		prisma.post.create({
 			data: { content, title, authorId: session.userId! },
+		}),
+})
+
+export const publishPost = mutationField("publishPost", {
+	type: PostType,
+	args: {
+		id: idArg(),
+	},
+	authorize: (_, { id }, { prisma, session }) =>
+		isMyPost({ postId: id, prisma, session }),
+	resolve: (_, { id }, { prisma }) =>
+		prisma.post.update({
+			where: { id },
+			data: { published: true, publishedAt: new Date() },
 		}),
 })

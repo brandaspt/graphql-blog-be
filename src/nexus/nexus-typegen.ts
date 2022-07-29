@@ -84,6 +84,7 @@ export interface NexusGenFieldTypes {
     createPost: NexusGenRootTypes['Post']; // Post!
     login: boolean; // Boolean!
     logout: boolean; // Boolean!
+    publishPost: NexusGenRootTypes['Post']; // Post!
     registerUser: NexusGenRootTypes['User']; // User!
   }
   Post: { // field return type
@@ -117,6 +118,7 @@ export interface NexusGenFieldTypeNames {
     createPost: 'Post'
     login: 'Boolean'
     logout: 'Boolean'
+    publishPost: 'Post'
     registerUser: 'User'
   }
   Post: { // field return type name
@@ -157,6 +159,9 @@ export interface NexusGenArgTypes {
     login: { // args
       email: string; // String!
       password: string; // String!
+    }
+    publishPost: { // args
+      id: string; // ID!
     }
     registerUser: { // args
       email: string; // String!

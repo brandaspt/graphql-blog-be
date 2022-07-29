@@ -4,7 +4,7 @@ import { Session } from "express-session"
 import Redis from "ioredis"
 import { prisma } from "./db"
 
-interface MySession extends Session {
+export interface MySession extends Session {
 	userId?: string
 }
 
