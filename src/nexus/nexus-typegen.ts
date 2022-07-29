@@ -47,6 +47,16 @@ export interface NexusGenScalars {
 
 export interface NexusGenObjects {
   Mutation: {};
+  Post: { // root type
+    authorId: string; // ID!
+    content: string; // String!
+    createdAt: NexusGenScalars['DateTime']; // DateTime!
+    id: string; // ID!
+    published: boolean; // Boolean!
+    publishedAt?: NexusGenScalars['DateTime'] | null; // DateTime
+    title: string; // String!
+    updatedAt: NexusGenScalars['DateTime']; // DateTime!
+  }
   Query: {};
   User: { // root type
     createdAt: NexusGenScalars['DateTime']; // DateTime!
@@ -71,9 +81,21 @@ export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars & NexusGenEnu
 export interface NexusGenFieldTypes {
   Mutation: { // field return type
     changeUserRole: NexusGenRootTypes['User']; // User!
+    createPost: NexusGenRootTypes['Post']; // Post!
     login: boolean; // Boolean!
     logout: boolean; // Boolean!
     registerUser: NexusGenRootTypes['User']; // User!
+  }
+  Post: { // field return type
+    author: NexusGenRootTypes['User']; // User!
+    authorId: string; // ID!
+    content: string; // String!
+    createdAt: NexusGenScalars['DateTime']; // DateTime!
+    id: string; // ID!
+    published: boolean; // Boolean!
+    publishedAt: NexusGenScalars['DateTime'] | null; // DateTime
+    title: string; // String!
+    updatedAt: NexusGenScalars['DateTime']; // DateTime!
   }
   Query: { // field return type
     getUser: NexusGenRootTypes['User'] | null; // User
@@ -83,6 +105,7 @@ export interface NexusGenFieldTypes {
     email: string; // String!
     id: string; // ID!
     name: string; // String!
+    posts: NexusGenRootTypes['Post'][]; // [Post!]!
     role: NexusGenEnums['Role']; // Role!
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
   }
@@ -91,9 +114,21 @@ export interface NexusGenFieldTypes {
 export interface NexusGenFieldTypeNames {
   Mutation: { // field return type name
     changeUserRole: 'User'
+    createPost: 'Post'
     login: 'Boolean'
     logout: 'Boolean'
     registerUser: 'User'
+  }
+  Post: { // field return type name
+    author: 'User'
+    authorId: 'ID'
+    content: 'String'
+    createdAt: 'DateTime'
+    id: 'ID'
+    published: 'Boolean'
+    publishedAt: 'DateTime'
+    title: 'String'
+    updatedAt: 'DateTime'
   }
   Query: { // field return type name
     getUser: 'User'
@@ -103,6 +138,7 @@ export interface NexusGenFieldTypeNames {
     email: 'String'
     id: 'ID'
     name: 'String'
+    posts: 'Post'
     role: 'Role'
     updatedAt: 'DateTime'
   }
@@ -113,6 +149,10 @@ export interface NexusGenArgTypes {
     changeUserRole: { // args
       id: string; // ID!
       role: NexusGenEnums['Role']; // Role!
+    }
+    createPost: { // args
+      content: string; // String!
+      title: string; // String!
     }
     login: { // args
       email: string; // String!

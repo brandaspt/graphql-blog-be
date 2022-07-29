@@ -9,6 +9,7 @@ import {
 } from "nexus"
 import { adminOnly } from "../authorization/adminOnly"
 import { hashPassword } from "../utils"
+import { PostType } from "./post"
 
 export const RoleType = enumType({ name: "Role", members: ["USER", "ADMIN"] })
 
@@ -21,6 +22,13 @@ export const UserType = objectType({
 		t.field("role", { type: "Role" })
 		t.date("createdAt")
 		t.date("updatedAt")
+		t.list.field("posts", {
+			type: PostType,
+			resolve: ({ id }, _, { prisma }) =>
+				prisma.post.findMany({
+					where: { AND: [{ authorId: id }, { published: true }] },
+				}),
+		})
 	},
 })
 

@@ -28,8 +28,8 @@ const main = async () => {
 			cookie: {
 				httpOnly: isProd(),
 				maxAge: 1000 * 60 * 60 * 24,
-				secure: true,
-				sameSite: "none",
+				secure: isProd(),
+				sameSite: "lax",
 			},
 		})
 	)
