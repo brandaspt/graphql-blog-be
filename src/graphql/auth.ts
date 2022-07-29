@@ -16,6 +16,7 @@ export const login = mutationField("login", {
 			})
 			if (!isCorrectPassword) throw new Error("Invalid Credentials")
 			session.userId = user.id
+
 			return true
 		} catch (err) {
 			console.error(err)

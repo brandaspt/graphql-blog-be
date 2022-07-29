@@ -1,6 +1,6 @@
 import * as allTypes from "./types"
 import path from "path"
-import { makeSchema } from "nexus"
+import { fieldAuthorizePlugin, makeSchema } from "nexus"
 
 export const getSchema = () =>
 	makeSchema({
@@ -17,4 +17,5 @@ export const getSchema = () =>
 			module: path.join(process.cwd(), "src", "context.ts"),
 			export: "Context",
 		},
+		plugins: [fieldAuthorizePlugin()],
 	})

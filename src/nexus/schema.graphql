@@ -8,14 +8,14 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 scalar DateTime
 
 type Mutation {
-  changeUserRole(id: String!, role: Role!): User!
+  changeUserRole(id: ID!, role: Role!): User!
   login(email: String!, password: String!): Boolean!
   logout: Boolean!
   registerUser(email: String!, name: String!, password: String!): User!
 }
 
 type Query {
-  getUser(id: String!): User
+  getUser(id: ID!): User
 }
 
 enum Role {
@@ -26,7 +26,7 @@ enum Role {
 type User {
   createdAt: DateTime!
   email: String!
-  id: String!
+  id: ID!
   name: String!
   role: Role!
   updatedAt: DateTime!
