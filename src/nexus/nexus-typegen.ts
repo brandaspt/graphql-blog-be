@@ -13,6 +13,10 @@ declare global {
      * A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
      */
     date<FieldName extends string>(fieldName: FieldName, opts?: core.CommonInputFieldConfig<TypeName, FieldName>): void // "DateTime";
+    /**
+     * A field whose value conforms to the standard internet email address format as specified in RFC822: https://www.w3.org/Protocols/rfc822/.
+     */
+    email<FieldName extends string>(fieldName: FieldName, opts?: core.CommonInputFieldConfig<TypeName, FieldName>): void // "EmailAddress";
   }
 }
 declare global {
@@ -21,6 +25,10 @@ declare global {
      * A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
      */
     date<FieldName extends string>(fieldName: FieldName, ...opts: core.ScalarOutSpread<TypeName, FieldName>): void // "DateTime";
+    /**
+     * A field whose value conforms to the standard internet email address format as specified in RFC822: https://www.w3.org/Protocols/rfc822/.
+     */
+    email<FieldName extends string>(fieldName: FieldName, ...opts: core.ScalarOutSpread<TypeName, FieldName>): void // "EmailAddress";
   }
 }
 
@@ -30,6 +38,11 @@ declare global {
 }
 
 export interface NexusGenInputs {
+  RegisterUserInput: { // input type
+    email: NexusGenScalars['EmailAddress']; // EmailAddress!
+    name: string; // String!
+    password: string; // String!
+  }
 }
 
 export interface NexusGenEnums {
@@ -43,6 +56,7 @@ export interface NexusGenScalars {
   Boolean: boolean
   ID: string
   DateTime: any
+  EmailAddress: any
 }
 
 export interface NexusGenObjects {
@@ -60,7 +74,7 @@ export interface NexusGenObjects {
   Query: {};
   User: { // root type
     createdAt: NexusGenScalars['DateTime']; // DateTime!
-    email: string; // String!
+    email: NexusGenScalars['EmailAddress']; // EmailAddress!
     id: string; // ID!
     name: string; // String!
     role: NexusGenEnums['Role']; // Role!
@@ -100,11 +114,13 @@ export interface NexusGenFieldTypes {
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
   }
   Query: { // field return type
+    getAllPublishedPosts: NexusGenRootTypes['Post'][]; // [Post!]!
+    getPost: NexusGenRootTypes['Post'] | null; // Post
     getUser: NexusGenRootTypes['User'] | null; // User
   }
   User: { // field return type
     createdAt: NexusGenScalars['DateTime']; // DateTime!
-    email: string; // String!
+    email: NexusGenScalars['EmailAddress']; // EmailAddress!
     id: string; // ID!
     name: string; // String!
     posts: NexusGenRootTypes['Post'][]; // [Post!]!
@@ -135,11 +151,13 @@ export interface NexusGenFieldTypeNames {
     updatedAt: 'DateTime'
   }
   Query: { // field return type name
+    getAllPublishedPosts: 'Post'
+    getPost: 'Post'
     getUser: 'User'
   }
   User: { // field return type name
     createdAt: 'DateTime'
-    email: 'String'
+    email: 'EmailAddress'
     id: 'ID'
     name: 'String'
     posts: 'Post'
@@ -166,9 +184,7 @@ export interface NexusGenArgTypes {
       password: string; // String!
     }
     registerUser: { // args
-      email: string; // String!
-      name: string; // String!
-      password: string; // String!
+      data: NexusGenInputs['RegisterUserInput']; // RegisterUserInput!
     }
     updatePost: { // args
       content?: string | null; // String
@@ -178,6 +194,9 @@ export interface NexusGenArgTypes {
     }
   }
   Query: {
+    getPost: { // args
+      id: string; // ID!
+    }
     getUser: { // args
       id: string; // ID!
     }
@@ -192,7 +211,7 @@ export interface NexusGenTypeInterfaces {
 
 export type NexusGenObjectNames = keyof NexusGenObjects;
 
-export type NexusGenInputNames = never;
+export type NexusGenInputNames = keyof NexusGenInputs;
 
 export type NexusGenEnumNames = keyof NexusGenEnums;
 

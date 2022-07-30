@@ -9,7 +9,7 @@ export const login = mutationField("login", {
 	},
 	resolve: async (_, { email, password }, { prisma, session }) => {
 		try {
-			const user = await prisma.user.findFirstOrThrow({ where: { email } })
+			const user = await prisma.user.findUniqueOrThrow({ where: { email } })
 			const isCorrectPassword = await verifyPassword({
 				plain: password,
 				hashed: user.password,

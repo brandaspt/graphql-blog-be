@@ -7,13 +7,18 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+"""
+A field whose value conforms to the standard internet email address format as specified in RFC822: https://www.w3.org/Protocols/rfc822/.
+"""
+scalar EmailAddress @specifiedBy(url: "https://www.w3.org/Protocols/rfc822/")
+
 type Mutation {
   changeUserRole(id: ID!, role: Role!): User!
   createPost(content: String!, title: String!): Post!
   deletePost(id: ID!): Boolean!
   login(email: String!, password: String!): Boolean!
   logout: Boolean!
-  registerUser(email: String!, name: String!, password: String!): User!
+  registerUser(data: RegisterUserInput!): User!
   updatePost(content: String, id: ID!, setPublished: Boolean, title: String): Post!
 }
 
@@ -30,7 +35,15 @@ type Post {
 }
 
 type Query {
+  getAllPublishedPosts: [Post!]!
+  getPost(id: ID!): Post
   getUser(id: ID!): User
+}
+
+input RegisterUserInput {
+  email: EmailAddress!
+  name: String!
+  password: String!
 }
 
 enum Role {
@@ -40,7 +53,7 @@ enum Role {
 
 type User {
   createdAt: DateTime!
-  email: String!
+  email: EmailAddress!
   id: ID!
   name: String!
   posts: [Post!]!

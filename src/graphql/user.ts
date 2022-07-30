@@ -1,11 +1,11 @@
 import {
 	enumType,
 	idArg,
+	inputObjectType,
 	mutationField,
 	nullable,
 	objectType,
 	queryField,
-	stringArg,
 } from "nexus"
 import { adminOnly } from "../authorization/adminOnly"
 import { hashPassword } from "../utils"
@@ -18,7 +18,7 @@ export const UserType = objectType({
 	definition(t) {
 		t.id("id")
 		t.string("name")
-		t.string("email")
+		t.email("email")
 		t.field("role", { type: "Role" })
 		t.date("createdAt")
 		t.date("updatedAt")
@@ -34,44 +34,54 @@ export const UserType = objectType({
 
 // Queries
 
-export const getUser = queryField("getUser", {
-	type: nullable(UserType),
-	args: {
-		id: idArg(),
+export const userQueries = queryField(t => {
+	t.field("getUser", {
+		type: nullable(UserType),
+		args: {
+			id: idArg(),
+		},
+		resolve: async (_, { id }, { prisma }) =>
+			prisma.user.findUnique({ where: { id } }),
+	})
+})
+
+// Inputs
+
+export const RegisterUserInput = inputObjectType({
+	name: "RegisterUserInput",
+	definition(t) {
+		t.string("name")
+		t.email("email")
+		t.string("password")
 	},
-	resolve: async (_, { id }, { prisma }) =>
-		prisma.user.findFirst({ where: { id } }),
 })
 
 // Mutations
 
-export const registerUser = mutationField("registerUser", {
-	type: UserType,
-	args: {
-		name: stringArg(),
-		email: stringArg(),
-		password: stringArg(),
-	},
-	resolve: async (_, { email, name, password }, { prisma }) => {
-		try {
-			const hashedPassword = await hashPassword(password)
-			return await prisma.user.create({
-				data: { email, name, password: hashedPassword },
-			})
-		} catch (err) {
-			console.error(err)
-			throw new Error("Error creating user")
-		}
-	},
-})
-
-export const changeUserRole = mutationField("changeUserRole", {
-	type: UserType,
-	args: {
-		id: idArg(),
-		role: RoleType,
-	},
-	authorize: (_, __, { prisma, session }) => adminOnly({ prisma, session }),
-	resolve: (_, { id, role }, { prisma }) =>
-		prisma.user.update({ where: { id }, data: { role } }),
+export const userMutations = mutationField(t => {
+	t.field("registerUser", {
+		type: UserType,
+		args: { data: RegisterUserInput },
+		resolve: async (_, { data: { email, name, password } }, { prisma }) => {
+			try {
+				const hashedPassword = await hashPassword(password)
+				return await prisma.user.create({
+					data: { email, name, password: hashedPassword },
+				})
+			} catch (err) {
+				console.error(err)
+				throw new Error("Error creating user")
+			}
+		},
+	})
+	t.field("changeUserRole", {
+		type: UserType,
+		args: {
+			id: idArg(),
+			role: RoleType,
+		},
+		authorize: (_, __, { prisma, session }) => adminOnly({ prisma, session }),
+		resolve: (_, { id, role }, { prisma }) =>
+			prisma.user.update({ where: { id }, data: { role } }),
+	})
 })
