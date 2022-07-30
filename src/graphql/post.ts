@@ -1,4 +1,11 @@
-import { idArg, mutationField, objectType, stringArg } from "nexus"
+import {
+	booleanArg,
+	idArg,
+	mutationField,
+	nullable,
+	objectType,
+	stringArg,
+} from "nexus"
 import { adminOnly, isMyPost } from "../authorization"
 import { UserType } from "./user"
 
@@ -34,16 +41,46 @@ export const createPost = mutationField("createPost", {
 		}),
 })
 
-export const publishPost = mutationField("publishPost", {
+export const updatePost = mutationField("updatePost", {
 	type: PostType,
 	args: {
 		id: idArg(),
+		title: nullable(stringArg()),
+		content: nullable(stringArg()),
+		setPublished: nullable(booleanArg()),
 	},
 	authorize: (_, { id }, { prisma, session }) =>
 		isMyPost({ postId: id, prisma, session }),
-	resolve: (_, { id }, { prisma }) =>
-		prisma.post.update({
+	resolve: (_, { id, title, content, setPublished }, { prisma }) => {
+		const data = {
+			title: title || undefined,
+			content: content || undefined,
+			published: setPublished === null ? undefined : setPublished,
+			publishedAt: setPublished
+				? new Date()
+				: setPublished === false
+				? null
+				: undefined,
+		}
+		return prisma.post.update({
 			where: { id },
-			data: { published: true, publishedAt: new Date() },
-		}),
+			data,
+		})
+	},
+})
+
+export const deletePost = mutationField("deletePost", {
+	type: "Boolean",
+	args: { id: idArg() },
+	authorize: (_, { id }, { prisma, session }) =>
+		isMyPost({ postId: id, prisma, session }),
+	resolve: async (_, { id }, { prisma }) => {
+		try {
+			await prisma.post.delete({ where: { id } })
+			return true
+		} catch (error) {
+			console.error(error)
+			throw new Error("Error deleting post")
+		}
+	},
 })

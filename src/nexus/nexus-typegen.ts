@@ -82,10 +82,11 @@ export interface NexusGenFieldTypes {
   Mutation: { // field return type
     changeUserRole: NexusGenRootTypes['User']; // User!
     createPost: NexusGenRootTypes['Post']; // Post!
+    deletePost: boolean; // Boolean!
     login: boolean; // Boolean!
     logout: boolean; // Boolean!
-    publishPost: NexusGenRootTypes['Post']; // Post!
     registerUser: NexusGenRootTypes['User']; // User!
+    updatePost: NexusGenRootTypes['Post']; // Post!
   }
   Post: { // field return type
     author: NexusGenRootTypes['User']; // User!
@@ -116,10 +117,11 @@ export interface NexusGenFieldTypeNames {
   Mutation: { // field return type name
     changeUserRole: 'User'
     createPost: 'Post'
+    deletePost: 'Boolean'
     login: 'Boolean'
     logout: 'Boolean'
-    publishPost: 'Post'
     registerUser: 'User'
+    updatePost: 'Post'
   }
   Post: { // field return type name
     author: 'User'
@@ -156,17 +158,23 @@ export interface NexusGenArgTypes {
       content: string; // String!
       title: string; // String!
     }
+    deletePost: { // args
+      id: string; // ID!
+    }
     login: { // args
       email: string; // String!
       password: string; // String!
-    }
-    publishPost: { // args
-      id: string; // ID!
     }
     registerUser: { // args
       email: string; // String!
       name: string; // String!
       password: string; // String!
+    }
+    updatePost: { // args
+      content?: string | null; // String
+      id: string; // ID!
+      setPublished?: boolean | null; // Boolean
+      title?: string | null; // String
     }
   }
   Query: {

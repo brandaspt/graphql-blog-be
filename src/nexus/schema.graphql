@@ -10,10 +10,11 @@ scalar DateTime
 type Mutation {
   changeUserRole(id: ID!, role: Role!): User!
   createPost(content: String!, title: String!): Post!
+  deletePost(id: ID!): Boolean!
   login(email: String!, password: String!): Boolean!
   logout: Boolean!
-  publishPost(id: ID!): Post!
   registerUser(email: String!, name: String!, password: String!): User!
+  updatePost(content: String, id: ID!, setPublished: Boolean, title: String): Post!
 }
 
 type Post {
