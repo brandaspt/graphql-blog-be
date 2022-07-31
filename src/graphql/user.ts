@@ -11,7 +11,20 @@ import { adminOnly } from "../authorization/adminOnly"
 import { hashPassword } from "../utils"
 import { PostType } from "./post"
 
-export const RoleType = enumType({ name: "Role", members: ["USER", "ADMIN"] })
+const RoleType = enumType({
+	name: "Role",
+	members: [
+		{
+			name: "USER",
+			description:
+				"Allowed to view published posts. Not allowed to create posts.",
+		},
+		{
+			name: "ADMIN",
+			description: "Allowed to create posts. Allowed to change user Role.",
+		},
+	],
+})
 
 export const UserType = objectType({
 	name: "User",
@@ -19,11 +32,12 @@ export const UserType = objectType({
 		t.id("id")
 		t.string("name")
 		t.email("email")
-		t.field("role", { type: "Role" })
+		t.field("role", { type: RoleType })
 		t.date("createdAt")
 		t.date("updatedAt")
 		t.list.field("posts", {
 			type: PostType,
+			description: "List of user's published posts",
 			resolve: ({ id }, _, { prisma }) =>
 				prisma.post.findMany({
 					where: { AND: [{ authorId: id }, { published: true }] },
@@ -37,6 +51,7 @@ export const UserType = objectType({
 export const userQueries = queryField(t => {
 	t.field("getUser", {
 		type: nullable(UserType),
+		description: "Get user by id",
 		args: {
 			id: idArg(),
 		},
@@ -74,8 +89,10 @@ export const userMutations = mutationField(t => {
 			}
 		},
 	})
+
 	t.field("changeUserRole", {
 		type: UserType,
+		description: "Change user's role. Allowed to admins only",
 		args: {
 			id: idArg(),
 			role: RoleType,

@@ -25,7 +25,10 @@ export const PostType = objectType({
 			resolve: async ({ authorId }, _, { prisma }) =>
 				prisma.user.findUniqueOrThrow({ where: { id: authorId } }),
 		})
-		t.nullable.date("publishedAt")
+		t.nullable.date("publishedAt", {
+			description:
+				"Date when post was published. Null if post has never been published or has been unpublished",
+		})
 		t.boolean("published")
 	},
 })
