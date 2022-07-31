@@ -28,7 +28,7 @@ const RoleType = enumType({
 
 export const UserType = objectType({
 	name: "User",
-	definition(t) {
+	definition: t => {
 		t.id("id")
 		t.string("name")
 		t.email("email")

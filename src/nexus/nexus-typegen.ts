@@ -6,7 +6,7 @@
 
 import type { Context } from "./../context"
 import type { FieldAuthorizeResolver } from "nexus/dist/plugins/fieldAuthorizePlugin"
-import type { core } from "nexus"
+import type { core, connectionPluginCore } from "nexus"
 declare global {
   interface NexusGenCustomInputMethods<TypeName extends string> {
     /**
@@ -29,6 +29,15 @@ declare global {
      * A field whose value conforms to the standard internet email address format as specified in RFC822: https://www.w3.org/Protocols/rfc822/.
      */
     email<FieldName extends string>(fieldName: FieldName, ...opts: core.ScalarOutSpread<TypeName, FieldName>): void // "EmailAddress";
+    /**
+     * Adds a Relay-style connection to the type, with numerous options for configuration
+     *
+     * @see https://nexusjs.org/docs/plugins/connection
+     */
+    connectionField<FieldName extends string>(
+      fieldName: FieldName,
+      config: connectionPluginCore.ConnectionFieldConfig<TypeName, FieldName>
+    ): void
   }
 }
 
@@ -56,6 +65,12 @@ export interface NexusGenScalars {
 
 export interface NexusGenObjects {
   Mutation: {};
+  PageInfo: { // root type
+    endCursor?: string | null; // String
+    hasNextPage: boolean; // Boolean!
+    hasPreviousPage: boolean; // Boolean!
+    startCursor?: string | null; // String
+  }
   Post: { // root type
     authorId: string; // ID!
     content: string; // String!
@@ -66,7 +81,15 @@ export interface NexusGenObjects {
     title: string; // String!
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
   }
+  PostEdge: { // root type
+    cursor: string; // String!
+    node: NexusGenRootTypes['Post']; // Post!
+  }
   Query: {};
+  QueryGetAllPublishedPosts_Connection: { // root type
+    edges: NexusGenRootTypes['PostEdge'][]; // [PostEdge!]!
+    pageInfo: NexusGenRootTypes['PageInfo']; // PageInfo!
+  }
   User: { // root type
     createdAt: NexusGenScalars['DateTime']; // DateTime!
     email: NexusGenScalars['EmailAddress']; // EmailAddress!
@@ -97,6 +120,12 @@ export interface NexusGenFieldTypes {
     registerUser: NexusGenRootTypes['User']; // User!
     updatePost: NexusGenRootTypes['Post']; // Post!
   }
+  PageInfo: { // field return type
+    endCursor: string | null; // String
+    hasNextPage: boolean; // Boolean!
+    hasPreviousPage: boolean; // Boolean!
+    startCursor: string | null; // String
+  }
   Post: { // field return type
     author: NexusGenRootTypes['User']; // User!
     authorId: string; // ID!
@@ -108,10 +137,19 @@ export interface NexusGenFieldTypes {
     title: string; // String!
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
   }
+  PostEdge: { // field return type
+    cursor: string; // String!
+    node: NexusGenRootTypes['Post']; // Post!
+  }
   Query: { // field return type
-    getAllPublishedPosts: NexusGenRootTypes['Post'][]; // [Post!]!
+    getAllPublishedPosts: NexusGenRootTypes['QueryGetAllPublishedPosts_Connection']; // QueryGetAllPublishedPosts_Connection!
     getPost: NexusGenRootTypes['Post'] | null; // Post
     getUser: NexusGenRootTypes['User'] | null; // User
+  }
+  QueryGetAllPublishedPosts_Connection: { // field return type
+    edges: NexusGenRootTypes['PostEdge'][]; // [PostEdge!]!
+    pageInfo: NexusGenRootTypes['PageInfo']; // PageInfo!
+    totalCount: number; // Int!
   }
   User: { // field return type
     createdAt: NexusGenScalars['DateTime']; // DateTime!
@@ -134,6 +172,12 @@ export interface NexusGenFieldTypeNames {
     registerUser: 'User'
     updatePost: 'Post'
   }
+  PageInfo: { // field return type name
+    endCursor: 'String'
+    hasNextPage: 'Boolean'
+    hasPreviousPage: 'Boolean'
+    startCursor: 'String'
+  }
   Post: { // field return type name
     author: 'User'
     authorId: 'ID'
@@ -145,10 +189,19 @@ export interface NexusGenFieldTypeNames {
     title: 'String'
     updatedAt: 'DateTime'
   }
+  PostEdge: { // field return type name
+    cursor: 'String'
+    node: 'Post'
+  }
   Query: { // field return type name
-    getAllPublishedPosts: 'Post'
+    getAllPublishedPosts: 'QueryGetAllPublishedPosts_Connection'
     getPost: 'Post'
     getUser: 'User'
+  }
+  QueryGetAllPublishedPosts_Connection: { // field return type name
+    edges: 'PostEdge'
+    pageInfo: 'PageInfo'
+    totalCount: 'Int'
   }
   User: { // field return type name
     createdAt: 'DateTime'
@@ -191,6 +244,11 @@ export interface NexusGenArgTypes {
     }
   }
   Query: {
+    getAllPublishedPosts: { // args
+      after?: string | null; // String
+      filter?: string | null; // String
+      first: number; // Int!
+    }
     getPost: { // args
       id: string; // ID!
     }
@@ -272,6 +330,7 @@ declare global {
      * resolver from executing.
      */
     authorize?: FieldAuthorizeResolver<TypeName, FieldName>
+    
   }
   interface NexusGenPluginInputFieldConfig<TypeName extends string, FieldName extends string> {
   }

@@ -23,6 +23,31 @@ type Mutation {
   updatePost(content: String, id: ID!, setPublished: Boolean, title: String): Post!
 }
 
+"""
+PageInfo cursor, as defined in https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo
+"""
+type PageInfo {
+  """
+  The cursor corresponding to the last nodes in edges. Null if the connection is empty.
+  """
+  endCursor: String
+
+  """
+  Used to indicate whether more edges exist following the set defined by the clients arguments.
+  """
+  hasNextPage: Boolean!
+
+  """
+  Used to indicate whether more edges exist prior to the set defined by the clients arguments.
+  """
+  hasPreviousPage: Boolean!
+
+  """
+  The cursor corresponding to the first nodes in edges. Null if the connection is empty.
+  """
+  startCursor: String
+}
+
 type Post {
   author: User!
   authorId: ID!
@@ -39,12 +64,44 @@ type Post {
   updatedAt: DateTime!
 }
 
+type PostEdge {
+  """https://facebook.github.io/relay/graphql/connections.htm#sec-Cursor"""
+  cursor: String!
+
+  """https://facebook.github.io/relay/graphql/connections.htm#sec-Node"""
+  node: Post!
+}
+
 type Query {
-  getAllPublishedPosts: [Post!]!
+  getAllPublishedPosts(
+    """Returns the elements in the list that come after the specified cursor"""
+    after: String
+
+    """
+    If provided, returns only posts that contain the string on either the title or content
+    """
+    filter: String
+
+    """Returns the first n elements from the list."""
+    first: Int!
+  ): QueryGetAllPublishedPosts_Connection!
   getPost(id: ID!): Post
 
   """Get user by id"""
   getUser(id: ID!): User
+}
+
+type QueryGetAllPublishedPosts_Connection {
+  """
+  https://facebook.github.io/relay/graphql/connections.htm#sec-Edge-Types
+  """
+  edges: [PostEdge!]!
+
+  """
+  https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo
+  """
+  pageInfo: PageInfo!
+  totalCount: Int!
 }
 
 enum Role {

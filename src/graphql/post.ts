@@ -1,7 +1,6 @@
 import {
 	booleanArg,
 	idArg,
-	list,
 	mutationField,
 	nullable,
 	objectType,
@@ -13,7 +12,7 @@ import { UserType } from "./user"
 
 export const PostType = objectType({
 	name: "Post",
-	definition(t) {
+	definition: t => {
 		t.id("id")
 		t.string("title")
 		t.string("content")
@@ -50,10 +49,58 @@ export const postQueries = queryField(t => {
 		},
 	})
 
-	t.field("getAllPublishedPosts", {
-		type: list(PostType),
-		resolve: (_, __, { prisma }) =>
-			prisma.post.findMany({ where: { published: true } }),
+	t.connectionField("getAllPublishedPosts", {
+		type: PostType,
+		cursorFromNode: ({ id }) => id,
+		additionalArgs: {
+			filter: nullable(
+				stringArg({
+					description:
+						"If provided, returns only posts that contain the string on either the title or content",
+				})
+			),
+		},
+		nodes: async (_, { first, after, filter }, { prisma }) => {
+			const posts = await prisma.post.findMany({
+				where: {
+					AND: [
+						{ published: true },
+						{
+							OR: filter
+								? [
+										{ content: { contains: filter, mode: "insensitive" } },
+										{ title: { contains: filter, mode: "insensitive" } },
+								  ]
+								: undefined,
+						},
+					],
+				},
+				take: first + 1,
+				skip: after ? 1 : 0,
+				cursor: after ? { id: after } : undefined,
+			})
+			return posts
+		},
+		extendConnection: t => {
+			t.int("totalCount", {
+				resolve: (_, { filter }: { filter?: string }, { prisma }) =>
+					prisma.post.count({
+						where: {
+							AND: [
+								{ published: true },
+								{
+									OR: filter
+										? [
+												{ content: { contains: filter, mode: "insensitive" } },
+												{ title: { contains: filter, mode: "insensitive" } },
+										  ]
+										: undefined,
+								},
+							],
+						},
+					}),
+			})
+		},
 	})
 })
 
