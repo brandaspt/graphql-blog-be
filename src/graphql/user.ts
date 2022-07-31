@@ -1,11 +1,11 @@
 import {
 	enumType,
 	idArg,
-	inputObjectType,
 	mutationField,
 	nullable,
 	objectType,
 	queryField,
+	stringArg,
 } from "nexus"
 import { adminOnly } from "../authorization/adminOnly"
 import { hashPassword } from "../utils"
@@ -60,24 +60,17 @@ export const userQueries = queryField(t => {
 	})
 })
 
-// Inputs
-
-export const RegisterUserInput = inputObjectType({
-	name: "RegisterUserInput",
-	definition(t) {
-		t.string("name")
-		t.email("email")
-		t.string("password")
-	},
-})
-
 // Mutations
 
 export const userMutations = mutationField(t => {
 	t.field("registerUser", {
 		type: UserType,
-		args: { data: RegisterUserInput },
-		resolve: async (_, { data: { email, name, password } }, { prisma }) => {
+		args: {
+			name: stringArg(),
+			password: stringArg(),
+			email: "EmailAddress",
+		},
+		resolve: async (_, { email, name, password }, { prisma }) => {
 			try {
 				const hashedPassword = await hashPassword(password)
 				return await prisma.user.create({

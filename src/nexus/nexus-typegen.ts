@@ -38,11 +38,6 @@ declare global {
 }
 
 export interface NexusGenInputs {
-  RegisterUserInput: { // input type
-    email: NexusGenScalars['EmailAddress']; // EmailAddress!
-    name: string; // String!
-    password: string; // String!
-  }
 }
 
 export interface NexusGenEnums {
@@ -180,11 +175,13 @@ export interface NexusGenArgTypes {
       id: string; // ID!
     }
     login: { // args
-      email: string; // String!
+      email: NexusGenScalars['EmailAddress']; // EmailAddress!
       password: string; // String!
     }
     registerUser: { // args
-      data: NexusGenInputs['RegisterUserInput']; // RegisterUserInput!
+      email: NexusGenScalars['EmailAddress']; // EmailAddress!
+      name: string; // String!
+      password: string; // String!
     }
     updatePost: { // args
       content?: string | null; // String
@@ -211,7 +208,7 @@ export interface NexusGenTypeInterfaces {
 
 export type NexusGenObjectNames = keyof NexusGenObjects;
 
-export type NexusGenInputNames = keyof NexusGenInputs;
+export type NexusGenInputNames = never;
 
 export type NexusGenEnumNames = keyof NexusGenEnums;
 
