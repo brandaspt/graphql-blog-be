@@ -47,6 +47,10 @@ declare global {
 }
 
 export interface NexusGenInputs {
+  FilterInput: { // input type
+    authorIds?: string[] | null; // [ID!]
+    searchQuery?: string | null; // String
+  }
 }
 
 export interface NexusGenEnums {
@@ -86,7 +90,7 @@ export interface NexusGenObjects {
     node: NexusGenRootTypes['Post']; // Post!
   }
   Query: {};
-  QueryGetAllPublishedPosts_Connection: { // root type
+  QueryGetPublishedPosts_Connection: { // root type
     edges: NexusGenRootTypes['PostEdge'][]; // [PostEdge!]!
     pageInfo: NexusGenRootTypes['PageInfo']; // PageInfo!
   }
@@ -142,11 +146,11 @@ export interface NexusGenFieldTypes {
     node: NexusGenRootTypes['Post']; // Post!
   }
   Query: { // field return type
-    getAllPublishedPosts: NexusGenRootTypes['QueryGetAllPublishedPosts_Connection']; // QueryGetAllPublishedPosts_Connection!
     getPost: NexusGenRootTypes['Post'] | null; // Post
+    getPublishedPosts: NexusGenRootTypes['QueryGetPublishedPosts_Connection']; // QueryGetPublishedPosts_Connection!
     getUser: NexusGenRootTypes['User'] | null; // User
   }
-  QueryGetAllPublishedPosts_Connection: { // field return type
+  QueryGetPublishedPosts_Connection: { // field return type
     edges: NexusGenRootTypes['PostEdge'][]; // [PostEdge!]!
     pageInfo: NexusGenRootTypes['PageInfo']; // PageInfo!
     totalCount: number; // Int!
@@ -194,11 +198,11 @@ export interface NexusGenFieldTypeNames {
     node: 'Post'
   }
   Query: { // field return type name
-    getAllPublishedPosts: 'QueryGetAllPublishedPosts_Connection'
     getPost: 'Post'
+    getPublishedPosts: 'QueryGetPublishedPosts_Connection'
     getUser: 'User'
   }
-  QueryGetAllPublishedPosts_Connection: { // field return type name
+  QueryGetPublishedPosts_Connection: { // field return type name
     edges: 'PostEdge'
     pageInfo: 'PageInfo'
     totalCount: 'Int'
@@ -244,13 +248,13 @@ export interface NexusGenArgTypes {
     }
   }
   Query: {
-    getAllPublishedPosts: { // args
-      after?: string | null; // String
-      filter?: string | null; // String
-      first: number; // Int!
-    }
     getPost: { // args
       id: string; // ID!
+    }
+    getPublishedPosts: { // args
+      after?: string | null; // String
+      filter?: NexusGenInputs['FilterInput'] | null; // FilterInput
+      first: number; // Int!
     }
     getUser: { // args
       id: string; // ID!
@@ -266,7 +270,7 @@ export interface NexusGenTypeInterfaces {
 
 export type NexusGenObjectNames = keyof NexusGenObjects;
 
-export type NexusGenInputNames = never;
+export type NexusGenInputNames = keyof NexusGenInputs;
 
 export type NexusGenEnumNames = keyof NexusGenEnums;
 

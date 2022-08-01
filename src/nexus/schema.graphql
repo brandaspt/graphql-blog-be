@@ -12,6 +12,16 @@ A field whose value conforms to the standard internet email address format as sp
 """
 scalar EmailAddress @specifiedBy(url: "https://www.w3.org/Protocols/rfc822/")
 
+input FilterInput {
+  """Filter by Author IDs"""
+  authorIds: [ID!]
+
+  """
+  If provided, returns only posts that contain the string on either the title or content
+  """
+  searchQuery: String
+}
+
 type Mutation {
   """Change user's role. Allowed to admins only"""
   changeUserRole(id: ID!, role: Role!): User!
@@ -73,25 +83,23 @@ type PostEdge {
 }
 
 type Query {
-  getAllPublishedPosts(
+  getPost(id: ID!): Post
+  getPublishedPosts(
     """Returns the elements in the list that come after the specified cursor"""
     after: String
 
-    """
-    If provided, returns only posts that contain the string on either the title or content
-    """
-    filter: String
+    """Filter posts"""
+    filter: FilterInput
 
     """Returns the first n elements from the list."""
     first: Int!
-  ): QueryGetAllPublishedPosts_Connection!
-  getPost(id: ID!): Post
+  ): QueryGetPublishedPosts_Connection!
 
   """Get user by id"""
   getUser(id: ID!): User
 }
 
-type QueryGetAllPublishedPosts_Connection {
+type QueryGetPublishedPosts_Connection {
   """
   https://facebook.github.io/relay/graphql/connections.htm#sec-Edge-Types
   """

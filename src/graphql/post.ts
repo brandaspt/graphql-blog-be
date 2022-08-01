@@ -1,6 +1,9 @@
+import { Prisma } from "@prisma/client"
 import {
+	arg,
 	booleanArg,
 	idArg,
+	inputObjectType,
 	mutationField,
 	nullable,
 	objectType,
@@ -8,7 +11,41 @@ import {
 	stringArg,
 } from "nexus"
 import { adminOnly, isMyPost } from "../authorization"
+import { NexusGenInputs } from "../nexus/nexus-typegen"
 import { UserType } from "./user"
+
+const getWhereClause = (
+	filter?: NexusGenInputs["FilterInput"] | null
+): Prisma.PostWhereInput => ({
+	AND: [
+		{ published: true },
+		{
+			OR: filter?.searchQuery
+				? [
+						{
+							content: {
+								contains: filter?.searchQuery,
+								mode: "insensitive",
+							},
+						},
+						{
+							title: {
+								contains: filter?.searchQuery,
+								mode: "insensitive",
+							},
+						},
+				  ]
+				: undefined,
+		},
+		{
+			authorId: filter?.authorIds?.length
+				? {
+						in: filter?.authorIds,
+				  }
+				: undefined,
+		},
+	],
+})
 
 export const PostType = objectType({
 	name: "Post",
@@ -32,6 +69,19 @@ export const PostType = objectType({
 	},
 })
 
+// Inputs
+
+export const FilterInput = inputObjectType({
+	name: "FilterInput",
+	definition: t => {
+		t.nullable.string("searchQuery", {
+			description:
+				"If provided, returns only posts that contain the string on either the title or content",
+		})
+		t.nullable.list.id("authorIds", { description: "Filter by Author IDs" })
+	},
+})
+
 // Queries
 
 export const postQueries = queryField(t => {
@@ -49,32 +99,20 @@ export const postQueries = queryField(t => {
 		},
 	})
 
-	t.connectionField("getAllPublishedPosts", {
+	t.connectionField("getPublishedPosts", {
 		type: PostType,
 		cursorFromNode: ({ id }) => id,
 		additionalArgs: {
 			filter: nullable(
-				stringArg({
-					description:
-						"If provided, returns only posts that contain the string on either the title or content",
+				arg({
+					type: FilterInput,
+					description: "Filter posts",
 				})
 			),
 		},
 		nodes: async (_, { first, after, filter }, { prisma }) => {
 			const posts = await prisma.post.findMany({
-				where: {
-					AND: [
-						{ published: true },
-						{
-							OR: filter
-								? [
-										{ content: { contains: filter, mode: "insensitive" } },
-										{ title: { contains: filter, mode: "insensitive" } },
-								  ]
-								: undefined,
-						},
-					],
-				},
+				where: getWhereClause(filter),
 				take: first + 1,
 				skip: after ? 1 : 0,
 				cursor: after ? { id: after } : undefined,
@@ -83,21 +121,13 @@ export const postQueries = queryField(t => {
 		},
 		extendConnection: t => {
 			t.int("totalCount", {
-				resolve: (_, { filter }: { filter?: string }, { prisma }) =>
+				resolve: (
+					_,
+					{ filter }: { filter?: NexusGenInputs["FilterInput"] | null },
+					{ prisma }
+				) =>
 					prisma.post.count({
-						where: {
-							AND: [
-								{ published: true },
-								{
-									OR: filter
-										? [
-												{ content: { contains: filter, mode: "insensitive" } },
-												{ title: { contains: filter, mode: "insensitive" } },
-										  ]
-										: undefined,
-								},
-							],
-						},
+						where: getWhereClause(filter),
 					}),
 			})
 		},
