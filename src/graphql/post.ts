@@ -15,35 +15,35 @@ import { NexusGenInputs } from "../nexus/nexus-typegen"
 import { UserType } from "./user"
 
 const getWhereClause = (
-	filter?: NexusGenInputs["FilterInput"] | null
+	filter?: NexusGenInputs["GetPublishedPostsFilterInput"] | null
 ): Prisma.PostWhereInput => ({
 	AND: [
 		{ published: true },
-		{
-			OR: filter?.searchQuery
-				? [
+		filter?.searchQuery
+			? {
+					OR: [
 						{
 							content: {
-								contains: filter?.searchQuery,
+								contains: filter.searchQuery,
 								mode: "insensitive",
 							},
 						},
 						{
 							title: {
-								contains: filter?.searchQuery,
+								contains: filter.searchQuery,
 								mode: "insensitive",
 							},
 						},
-				  ]
-				: undefined,
-		},
-		{
-			authorId: filter?.authorIds?.length
-				? {
-						in: filter?.authorIds,
-				  }
-				: undefined,
-		},
+					],
+			  }
+			: {},
+		filter?.authorIds?.length
+			? {
+					authorId: {
+						in: filter.authorIds,
+					},
+			  }
+			: {},
 	],
 })
 
@@ -71,8 +71,8 @@ export const PostType = objectType({
 
 // Inputs
 
-export const FilterInput = inputObjectType({
-	name: "FilterInput",
+export const GetPublishedPostsFilterInput = inputObjectType({
+	name: "GetPublishedPostsFilterInput",
 	definition: t => {
 		t.nullable.string("searchQuery", {
 			description:
@@ -101,29 +101,28 @@ export const postQueries = queryField(t => {
 
 	t.connectionField("getPublishedPosts", {
 		type: PostType,
-		cursorFromNode: ({ id }) => id,
 		additionalArgs: {
 			filter: nullable(
 				arg({
-					type: FilterInput,
+					type: GetPublishedPostsFilterInput,
 					description: "Filter posts",
 				})
 			),
 		},
-		nodes: async (_, { first, after, filter }, { prisma }) => {
-			const posts = await prisma.post.findMany({
+		nodes: async (_, { first, after, filter }, { prisma }) =>
+			prisma.post.findMany({
 				where: getWhereClause(filter),
 				take: first + 1,
 				skip: after ? 1 : 0,
 				cursor: after ? { id: after } : undefined,
-			})
-			return posts
-		},
+			}),
 		extendConnection: t => {
 			t.int("totalCount", {
 				resolve: (
 					_,
-					{ filter }: { filter?: NexusGenInputs["FilterInput"] | null },
+					{
+						filter,
+					}: { filter?: NexusGenInputs["GetPublishedPostsFilterInput"] | null },
 					{ prisma }
 				) =>
 					prisma.post.count({

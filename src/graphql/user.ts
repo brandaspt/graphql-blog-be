@@ -1,6 +1,8 @@
+import { Prisma, User } from "@prisma/client"
 import {
 	enumType,
 	idArg,
+	inputObjectType,
 	mutationField,
 	nullable,
 	objectType,
@@ -8,8 +10,37 @@ import {
 	stringArg,
 } from "nexus"
 import { adminOnly } from "../authorization/adminOnly"
+import { NexusGenInputs } from "../nexus/nexus-typegen"
 import { hashPassword } from "../utils"
 import { PostType } from "./post"
+
+const getWhereClause = (
+	authorId: string,
+	filter?: NexusGenInputs["UserPostsFilterInput"] | null
+): Prisma.PostWhereInput => ({
+	AND: [
+		{ authorId: authorId },
+		{ published: true },
+		filter?.searchQuery
+			? {
+					OR: [
+						{
+							content: {
+								contains: filter.searchQuery,
+								mode: "insensitive",
+							},
+						},
+						{
+							title: {
+								contains: filter.searchQuery,
+								mode: "insensitive",
+							},
+						},
+					],
+			  }
+			: {},
+	],
+})
 
 const RoleType = enumType({
 	name: "Role",
@@ -35,14 +66,45 @@ export const UserType = objectType({
 		t.field("role", { type: RoleType })
 		t.date("createdAt")
 		t.date("updatedAt")
-		t.list.field("posts", {
+		t.connectionField("posts", {
 			type: PostType,
+			additionalArgs: {
+				filter: nullable(UserPostsFilterInput),
+			},
 			description: "List of user's published posts",
-			resolve: ({ id }, _, { prisma }) =>
+			nodes: ({ id }, { filter, first, after }, { prisma }) =>
 				prisma.post.findMany({
-					where: { AND: [{ authorId: id }, { published: true }] },
+					where: getWhereClause(id, filter),
+					take: first + 1,
+					skip: after ? 1 : 0,
+					cursor: after ? { id: after } : undefined,
 				}),
+			extendConnection: t => {
+				t.int("totalCount", {
+					resolve: (
+						{ id }, // Nexus bug. Typed as {edges, pageInfo} but it's actually the parent (User)
+						{
+							filter,
+						}: {
+							filter?: NexusGenInputs["UserPostsFilterInput"] | null
+						},
+						{ prisma }
+					) =>
+						prisma.post.count({
+							where: getWhereClause(id, filter),
+						}),
+				})
+			},
 		})
+	},
+})
+
+// Inputs
+
+export const UserPostsFilterInput = inputObjectType({
+	name: "UserPostsFilterInput",
+	definition: t => {
+		t.nullable.string("searchQuery")
 	},
 })
 

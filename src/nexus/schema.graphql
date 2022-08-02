@@ -12,7 +12,7 @@ A field whose value conforms to the standard internet email address format as sp
 """
 scalar EmailAddress @specifiedBy(url: "https://www.w3.org/Protocols/rfc822/")
 
-input FilterInput {
+input GetPublishedPostsFilterInput {
   """Filter by Author IDs"""
   authorIds: [ID!]
 
@@ -89,7 +89,7 @@ type Query {
     after: String
 
     """Filter posts"""
-    filter: FilterInput
+    filter: GetPublishedPostsFilterInput
 
     """Returns the first n elements from the list."""
     first: Int!
@@ -127,7 +127,31 @@ type User {
   name: String!
 
   """List of user's published posts"""
-  posts: [Post!]!
+  posts(
+    """Returns the elements in the list that come after the specified cursor"""
+    after: String
+    filter: UserPostsFilterInput
+
+    """Returns the first n elements from the list."""
+    first: Int!
+  ): UserPosts_Connection!
   role: Role!
   updatedAt: DateTime!
+}
+
+input UserPostsFilterInput {
+  searchQuery: String
+}
+
+type UserPosts_Connection {
+  """
+  https://facebook.github.io/relay/graphql/connections.htm#sec-Edge-Types
+  """
+  edges: [PostEdge!]!
+
+  """
+  https://facebook.github.io/relay/graphql/connections.htm#sec-undefined.PageInfo
+  """
+  pageInfo: PageInfo!
+  totalCount: Int!
 }

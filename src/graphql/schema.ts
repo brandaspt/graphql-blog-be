@@ -21,6 +21,7 @@ export const getSchema = () =>
 			fieldAuthorizePlugin(),
 			connectionPlugin({
 				disableBackwardPagination: true,
+				cursorFromNode: ({ id }) => id,
 			}),
 		],
 	})

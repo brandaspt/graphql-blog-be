@@ -47,8 +47,11 @@ declare global {
 }
 
 export interface NexusGenInputs {
-  FilterInput: { // input type
+  GetPublishedPostsFilterInput: { // input type
     authorIds?: string[] | null; // [ID!]
+    searchQuery?: string | null; // String
+  }
+  UserPostsFilterInput: { // input type
     searchQuery?: string | null; // String
   }
 }
@@ -101,6 +104,10 @@ export interface NexusGenObjects {
     name: string; // String!
     role: NexusGenEnums['Role']; // Role!
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
+  }
+  UserPosts_Connection: { // root type
+    edges: NexusGenRootTypes['PostEdge'][]; // [PostEdge!]!
+    pageInfo: NexusGenRootTypes['PageInfo']; // PageInfo!
   }
 }
 
@@ -160,9 +167,14 @@ export interface NexusGenFieldTypes {
     email: NexusGenScalars['EmailAddress']; // EmailAddress!
     id: string; // ID!
     name: string; // String!
-    posts: NexusGenRootTypes['Post'][]; // [Post!]!
+    posts: NexusGenRootTypes['UserPosts_Connection']; // UserPosts_Connection!
     role: NexusGenEnums['Role']; // Role!
     updatedAt: NexusGenScalars['DateTime']; // DateTime!
+  }
+  UserPosts_Connection: { // field return type
+    edges: NexusGenRootTypes['PostEdge'][]; // [PostEdge!]!
+    pageInfo: NexusGenRootTypes['PageInfo']; // PageInfo!
+    totalCount: number; // Int!
   }
 }
 
@@ -212,9 +224,14 @@ export interface NexusGenFieldTypeNames {
     email: 'EmailAddress'
     id: 'ID'
     name: 'String'
-    posts: 'Post'
+    posts: 'UserPosts_Connection'
     role: 'Role'
     updatedAt: 'DateTime'
+  }
+  UserPosts_Connection: { // field return type name
+    edges: 'PostEdge'
+    pageInfo: 'PageInfo'
+    totalCount: 'Int'
   }
 }
 
@@ -253,11 +270,18 @@ export interface NexusGenArgTypes {
     }
     getPublishedPosts: { // args
       after?: string | null; // String
-      filter?: NexusGenInputs['FilterInput'] | null; // FilterInput
+      filter?: NexusGenInputs['GetPublishedPostsFilterInput'] | null; // GetPublishedPostsFilterInput
       first: number; // Int!
     }
     getUser: { // args
       id: string; // ID!
+    }
+  }
+  User: {
+    posts: { // args
+      after?: string | null; // String
+      filter?: NexusGenInputs['UserPostsFilterInput'] | null; // UserPostsFilterInput
+      first: number; // Int!
     }
   }
 }
