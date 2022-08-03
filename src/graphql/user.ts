@@ -120,6 +120,15 @@ export const userQueries = queryField(t => {
 		resolve: async (_, { id }, { prisma }) =>
 			prisma.user.findUnique({ where: { id } }),
 	})
+
+	t.field("getUserMe", {
+		type: nullable(UserType),
+		description: "Get authenticated user",
+		resolve: async (_, __, { prisma, session }) => {
+			if (!session.userId) throw new Error("Not Authenticated")
+			return prisma.user.findUnique({ where: { id: session.userId } })
+		},
+	})
 })
 
 // Mutations

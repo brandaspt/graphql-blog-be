@@ -97,6 +97,9 @@ type Query {
 
   """Get user by id"""
   getUser(id: ID!): User
+
+  """Get authenticated user"""
+  getUserMe: User
 }
 
 type QueryGetPublishedPosts_Connection {

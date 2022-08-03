@@ -156,6 +156,7 @@ export interface NexusGenFieldTypes {
     getPost: NexusGenRootTypes['Post'] | null; // Post
     getPublishedPosts: NexusGenRootTypes['QueryGetPublishedPosts_Connection']; // QueryGetPublishedPosts_Connection!
     getUser: NexusGenRootTypes['User'] | null; // User
+    getUserMe: NexusGenRootTypes['User'] | null; // User
   }
   QueryGetPublishedPosts_Connection: { // field return type
     edges: NexusGenRootTypes['PostEdge'][]; // [PostEdge!]!
@@ -213,6 +214,7 @@ export interface NexusGenFieldTypeNames {
     getPost: 'Post'
     getPublishedPosts: 'QueryGetPublishedPosts_Connection'
     getUser: 'User'
+    getUserMe: 'User'
   }
   QueryGetPublishedPosts_Connection: { // field return type name
     edges: 'PostEdge'
