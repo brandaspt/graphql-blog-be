@@ -10,7 +10,10 @@ export const login = mutationField(t => {
 		},
 		resolve: async (_, { email, password }, { prisma, session }) => {
 			try {
-				const user = await prisma.user.findUniqueOrThrow({ where: { email } })
+				const user = await prisma.userModel.findUniqueOrThrow({
+					where: { email },
+				})
+				if (!user.password) throw new Error("No Password Set")
 				const isCorrectPassword = await verifyPassword({
 					plain: password,
 					hashed: user.password,

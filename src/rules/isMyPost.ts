@@ -10,7 +10,7 @@ export const isMyPost = async ({
 	postId: string
 	session: MySession
 }) => {
-	const post = await prisma.post.findUniqueOrThrow({
+	const post = await prisma.postModel.findUniqueOrThrow({
 		where: { id: postId },
 	})
 	return post.authorId === session.userId

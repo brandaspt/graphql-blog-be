@@ -1,0 +1,16 @@
+model AuthProvidersModel {
+  provider  String
+  id        String
+  user      UserModel @relation(fields: [userId], references: [id])
+  userId    String
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@id([provider, id])
+  @@map("auth_providers")
+}
+
+model UserModel {
+  id            String               @id @default(cuid())
+  authProviders AuthProvidersModel[]
+}

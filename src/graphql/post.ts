@@ -10,13 +10,13 @@ import {
 	queryField,
 	stringArg,
 } from "nexus"
-import { adminOnly, isMyPost } from "../authorization"
+import { adminOnly, isMyPost } from "../rules"
 import { NexusGenInputs } from "../nexus/nexus-typegen"
 import { UserType } from "./user"
 
 const getWhereClause = (
 	filter?: NexusGenInputs["GetPublishedPostsFilterInput"] | null
-): Prisma.PostWhereInput => ({
+): Prisma.PostModelWhereInput => ({
 	AND: [
 		{ published: true },
 		filter?.searchQuery
@@ -59,7 +59,7 @@ export const PostType = objectType({
 		t.field("author", {
 			type: UserType,
 			resolve: async ({ authorId }, _, { prisma }) =>
-				prisma.user.findUniqueOrThrow({ where: { id: authorId } }),
+				prisma.userModel.findUniqueOrThrow({ where: { id: authorId } }),
 		})
 		t.nullable.date("publishedAt", {
 			description:
@@ -91,7 +91,7 @@ export const postQueries = queryField(t => {
 			id: idArg(),
 		},
 		resolve: async (_, { id }, { prisma, session }) => {
-			const post = await prisma.post.findUnique({ where: { id } })
+			const post = await prisma.postModel.findUnique({ where: { id } })
 			if (!post?.published && post?.authorId !== session.userId) {
 				return null
 			}
@@ -110,7 +110,7 @@ export const postQueries = queryField(t => {
 			),
 		},
 		nodes: async (_, { first, after, filter }, { prisma }) =>
-			prisma.post.findMany({
+			prisma.postModel.findMany({
 				where: getWhereClause(filter),
 				take: first + 1,
 				skip: after ? 1 : 0,
@@ -125,7 +125,7 @@ export const postQueries = queryField(t => {
 					}: { filter?: NexusGenInputs["GetPublishedPostsFilterInput"] | null },
 					{ prisma }
 				) =>
-					prisma.post.count({
+					prisma.postModel.count({
 						where: getWhereClause(filter),
 					}),
 			})
@@ -144,7 +144,7 @@ export const postMutations = mutationField(t => {
 		},
 		authorize: (_, __, { prisma, session }) => adminOnly({ prisma, session }),
 		resolve: (_, { title, content }, { prisma, session }) =>
-			prisma.post.create({
+			prisma.postModel.create({
 				data: { content, title, authorId: session.userId! },
 			}),
 	})
@@ -170,7 +170,7 @@ export const postMutations = mutationField(t => {
 					? null
 					: undefined,
 			}
-			return prisma.post.update({
+			return prisma.postModel.update({
 				where: { id },
 				data,
 			})
@@ -184,7 +184,7 @@ export const postMutations = mutationField(t => {
 			isMyPost({ postId: id, prisma, session }),
 		resolve: async (_, { id }, { prisma }) => {
 			try {
-				await prisma.post.delete({ where: { id } })
+				await prisma.postModel.delete({ where: { id } })
 				return true
 			} catch (error) {
 				console.error(error)

@@ -1,4 +1,4 @@
-import { Prisma, User } from "@prisma/client"
+import { Prisma } from "@prisma/client"
 import {
 	enumType,
 	idArg,
@@ -9,7 +9,7 @@ import {
 	queryField,
 	stringArg,
 } from "nexus"
-import { adminOnly } from "../authorization/adminOnly"
+import { adminOnly } from "../rules/adminOnly"
 import { NexusGenInputs } from "../nexus/nexus-typegen"
 import { hashPassword } from "../utils"
 import { PostType } from "./post"
@@ -17,7 +17,7 @@ import { PostType } from "./post"
 const getWhereClause = (
 	authorId: string,
 	filter?: NexusGenInputs["UserPostsFilterInput"] | null
-): Prisma.PostWhereInput => ({
+): Prisma.PostModelWhereInput => ({
 	AND: [
 		{ authorId: authorId },
 		{ published: true },
@@ -62,7 +62,7 @@ export const UserType = objectType({
 	definition: t => {
 		t.id("id")
 		t.string("name")
-		t.email("email")
+		t.nullable.email("email")
 		t.field("role", { type: RoleType })
 		t.date("createdAt")
 		t.date("updatedAt")
@@ -73,7 +73,7 @@ export const UserType = objectType({
 			},
 			description: "List of user's published posts",
 			nodes: ({ id }, { filter, first, after }, { prisma }) =>
-				prisma.post.findMany({
+				prisma.postModel.findMany({
 					where: getWhereClause(id, filter),
 					take: first + 1,
 					skip: after ? 1 : 0,
@@ -90,7 +90,7 @@ export const UserType = objectType({
 						},
 						{ prisma }
 					) =>
-						prisma.post.count({
+						prisma.postModel.count({
 							where: getWhereClause(id, filter),
 						}),
 				})
@@ -118,15 +118,17 @@ export const userQueries = queryField(t => {
 			id: idArg(),
 		},
 		resolve: async (_, { id }, { prisma }) =>
-			prisma.user.findUnique({ where: { id } }),
+			prisma.userModel.findUnique({ where: { id } }),
 	})
 
 	t.field("getUserMe", {
 		type: nullable(UserType),
 		description: "Get authenticated user",
-		resolve: async (_, __, { prisma, session }) => {
+		resolve: async (_, __, { prisma, session, req }) => {
+			console.log(session)
+			console.log(req.user)
 			if (!session.userId) throw new Error("Not Authenticated")
-			return prisma.user.findUnique({ where: { id: session.userId } })
+			return prisma.userModel.findUnique({ where: { id: session.userId } })
 		},
 	})
 })
@@ -144,7 +146,7 @@ export const userMutations = mutationField(t => {
 		resolve: async (_, { email, name, password }, { prisma }) => {
 			try {
 				const hashedPassword = await hashPassword(password)
-				return await prisma.user.create({
+				return await prisma.userModel.create({
 					data: { email, name, password: hashedPassword },
 				})
 			} catch (err) {
@@ -163,6 +165,6 @@ export const userMutations = mutationField(t => {
 		},
 		authorize: (_, __, { prisma, session }) => adminOnly({ prisma, session }),
 		resolve: (_, { id, role }, { prisma }) =>
-			prisma.user.update({ where: { id }, data: { role } }),
+			prisma.userModel.update({ where: { id }, data: { role } }),
 	})
 })

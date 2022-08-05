@@ -7,18 +7,14 @@ import session from "express-session"
 import { isProd } from "./utils"
 import { redisClient } from "./redis"
 import passport from "passport"
-import { Strategy as FacebookStrategy } from "passport-facebook"
-import { OAuth2Strategy as GoogleStrategy } from "passport-google-oauth"
+import { prisma } from "./db"
+import authRoutes from "./rest/authRoutes"
+import "./config/passport"
 
 const main = async () => {
 	const app = express()
 
 	const redisStore = RedisSession(session)
-
-	const apolloServer = new ApolloServer({
-		schema: getSchema(),
-		context: ({ req, res }) => getContext({ req, res, redis: redisClient }),
-	})
 
 	app.use(
 		session({
@@ -40,63 +36,13 @@ const main = async () => {
 	app.use(passport.initialize())
 	app.use(passport.session())
 
-	passport.serializeUser((user, cb) => {
-		cb(null, user)
+	app.use("/auth", authRoutes)
+
+	const apolloServer = new ApolloServer({
+		schema: getSchema(),
+		context: ({ req, res }) =>
+			getContext({ req, res, redis: redisClient, prisma }),
 	})
-
-	passport.deserializeUser((user: Express.User, cb) => {
-		cb(null, user)
-	})
-
-	passport.use(
-		new GoogleStrategy(
-			{
-				clientID: process.env.GOOGLE_APP_ID!,
-				clientSecret: process.env.GOOGLE_APP_SECRET!,
-				callbackURL: "http://localhost:5000/auth/google/callback/",
-			},
-			(_, __, profile, done) => done(null, profile)
-		)
-	)
-	passport.use(
-		new FacebookStrategy(
-			{
-				clientID: process.env.FACEBOOK_APP_ID!,
-				clientSecret: process.env.FACEBOOK_APP_SECRET!,
-				callbackURL: "http://localhost:5000/auth/facebook/callback/",
-			},
-			(_, __, profile, done) => done(null, profile)
-		)
-	)
-
-	app.get(
-		"/auth/google/",
-		passport.authenticate("google", { scope: ["email", "profile"] })
-	)
-	app.get(
-		"/auth/google/callback/",
-		passport.authenticate("google", {
-			failureRedirect: "/",
-		}),
-		(req, res) => {
-			console.log("req", req.user)
-			res.json(req.user)
-		}
-	)
-	app.get(
-		"/auth/facebook/",
-		passport.authenticate("facebook", { scope: ["email", "public_profile"] })
-	)
-	app.get(
-		"/auth/facebook/callback/",
-		passport.authenticate("facebook", {
-			failureRedirect: "/",
-		}),
-		(req, res) => {
-			console.log("req", req.user)
-			res.json(req.user)
-		}
-	)
 
 	await apolloServer.start()
 

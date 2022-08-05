@@ -99,7 +99,7 @@ export interface NexusGenObjects {
   }
   User: { // root type
     createdAt: NexusGenScalars['DateTime']; // DateTime!
-    email: NexusGenScalars['EmailAddress']; // EmailAddress!
+    email?: NexusGenScalars['EmailAddress'] | null; // EmailAddress
     id: string; // ID!
     name: string; // String!
     role: NexusGenEnums['Role']; // Role!
@@ -165,7 +165,7 @@ export interface NexusGenFieldTypes {
   }
   User: { // field return type
     createdAt: NexusGenScalars['DateTime']; // DateTime!
-    email: NexusGenScalars['EmailAddress']; // EmailAddress!
+    email: NexusGenScalars['EmailAddress'] | null; // EmailAddress
     id: string; // ID!
     name: string; // String!
     posts: NexusGenRootTypes['UserPosts_Connection']; // UserPosts_Connection!

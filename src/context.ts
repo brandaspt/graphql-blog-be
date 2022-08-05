@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client"
 import { Request, Response } from "express"
 import { Session } from "express-session"
 import Redis from "ioredis"
-import { prisma } from "./db"
 
 export interface MySession extends Session {
 	userId?: string
@@ -20,7 +19,8 @@ export const getContext = ({
 	req,
 	res,
 	redis,
-}: Omit<Context, "prisma" | "session">): Context => ({
+	prisma,
+}: Omit<Context, "session">): Context => ({
 	prisma,
 	req,
 	res,

@@ -5,7 +5,7 @@ export const adminOnly = async ({
 	prisma,
 	session,
 }: Pick<Context, "prisma" | "session">) => {
-	const userMe = await prisma.user.findUniqueOrThrow({
+	const userMe = await prisma.userModel.findUniqueOrThrow({
 		where: { id: session.userId },
 	})
 	return isAdmin(userMe?.role)
