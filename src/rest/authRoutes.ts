@@ -30,7 +30,6 @@ router.get(
 		failureRedirect: "/",
 	}),
 	(req, res) => {
-		console.log("req", req.user)
 		res.json(req.user)
 	}
 )

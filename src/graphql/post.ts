@@ -1,4 +1,3 @@
-import { Prisma } from "@prisma/client"
 import {
 	arg,
 	booleanArg,
@@ -13,39 +12,7 @@ import {
 import { adminOnly, isMyPost } from "../rules"
 import { NexusGenInputs } from "../nexus/nexus-typegen"
 import { UserType } from "./user"
-
-const getWhereClause = (
-	filter?: NexusGenInputs["GetPublishedPostsFilterInput"] | null
-): Prisma.PostModelWhereInput => ({
-	AND: [
-		{ published: true },
-		filter?.searchQuery
-			? {
-					OR: [
-						{
-							content: {
-								contains: filter.searchQuery,
-								mode: "insensitive",
-							},
-						},
-						{
-							title: {
-								contains: filter.searchQuery,
-								mode: "insensitive",
-							},
-						},
-					],
-			  }
-			: {},
-		filter?.authorIds?.length
-			? {
-					authorId: {
-						in: filter.authorIds,
-					},
-			  }
-			: {},
-	],
-})
+import { postsFilterWhereClause } from "../utils/postsFilterWhereClause"
 
 export const PostType = objectType({
 	name: "Post",
@@ -111,7 +78,11 @@ export const postQueries = queryField(t => {
 		},
 		nodes: async (_, { first, after, filter }, { prisma }) =>
 			prisma.postModel.findMany({
-				where: getWhereClause(filter),
+				where: postsFilterWhereClause({
+					authorIds: filter?.authorIds || undefined,
+					searchQuery: filter?.searchQuery || undefined,
+					published: true,
+				}),
 				take: first + 1,
 				skip: after ? 1 : 0,
 				cursor: after ? { id: after } : undefined,
@@ -126,7 +97,11 @@ export const postQueries = queryField(t => {
 					{ prisma }
 				) =>
 					prisma.postModel.count({
-						where: getWhereClause(filter),
+						where: postsFilterWhereClause({
+							authorIds: filter?.authorIds || undefined,
+							searchQuery: filter?.searchQuery || undefined,
+							published: true,
+						}),
 					}),
 			})
 		},

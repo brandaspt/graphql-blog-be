@@ -1,5 +1,5 @@
-import { Prisma } from "@prisma/client"
 import {
+	arg,
 	enumType,
 	idArg,
 	inputObjectType,
@@ -13,34 +13,7 @@ import { adminOnly } from "../rules/adminOnly"
 import { NexusGenInputs } from "../nexus/nexus-typegen"
 import { hashPassword } from "../utils"
 import { PostType } from "./post"
-
-const getWhereClause = (
-	authorId: string,
-	filter?: NexusGenInputs["UserPostsFilterInput"] | null
-): Prisma.PostModelWhereInput => ({
-	AND: [
-		{ authorId: authorId },
-		{ published: true },
-		filter?.searchQuery
-			? {
-					OR: [
-						{
-							content: {
-								contains: filter.searchQuery,
-								mode: "insensitive",
-							},
-						},
-						{
-							title: {
-								contains: filter.searchQuery,
-								mode: "insensitive",
-							},
-						},
-					],
-			  }
-			: {},
-	],
-})
+import { postsFilterWhereClause } from "../utils/postsFilterWhereClause"
 
 const RoleType = enumType({
 	name: "Role",
@@ -74,7 +47,11 @@ export const UserType = objectType({
 			description: "List of user's published posts",
 			nodes: ({ id }, { filter, first, after }, { prisma }) =>
 				prisma.postModel.findMany({
-					where: getWhereClause(id, filter),
+					where: postsFilterWhereClause({
+						authorIds: [id],
+						searchQuery: filter?.searchQuery || undefined,
+						published: true,
+					}),
 					take: first + 1,
 					skip: after ? 1 : 0,
 					cursor: after ? { id: after } : undefined,
@@ -91,7 +68,11 @@ export const UserType = objectType({
 						{ prisma }
 					) =>
 						prisma.postModel.count({
-							where: getWhereClause(id, filter),
+							where: postsFilterWhereClause({
+								authorIds: [id],
+								searchQuery: filter?.searchQuery || undefined,
+								published: true,
+							}),
 						}),
 				})
 			},
@@ -105,6 +86,24 @@ export const UserPostsFilterInput = inputObjectType({
 	name: "UserPostsFilterInput",
 	definition: t => {
 		t.nullable.string("searchQuery")
+	},
+})
+
+export const GetMyPostsFilterInput = inputObjectType({
+	name: "GetMyPostsFilterInput",
+	definition: t => {
+		t.nullable.string("searchQuery", {
+			description:
+				"If provided, returns only posts that contain the string on either the title or content",
+		})
+		t.nullable.boolean("published", {
+			description: "Return published posts. Default true",
+			default: true,
+		})
+		t.nullable.boolean("unpublished", {
+			description: "Return unpublished posts. Default true",
+			default: true,
+		})
 	},
 })
 
@@ -125,10 +124,53 @@ export const userQueries = queryField(t => {
 		type: nullable(UserType),
 		description: "Get authenticated user",
 		resolve: async (_, __, { prisma, session, req }) => {
-			console.log(session)
-			console.log(req.user)
 			if (!session.userId) throw new Error("Not Authenticated")
 			return prisma.userModel.findUnique({ where: { id: session.userId } })
+		},
+	})
+
+	t.connectionField("getMyPosts", {
+		type: PostType,
+		additionalArgs: {
+			filter: nullable(
+				arg({
+					type: GetMyPostsFilterInput,
+					description: "Filter posts",
+				})
+			),
+		},
+		nodes: async (_, { first, after, filter }, { prisma, session }) => {
+			if (!session.userId) throw new Error("Not Authenticated")
+			return prisma.postModel.findMany({
+				where: postsFilterWhereClause({
+					authorIds: [session.userId] || undefined,
+					searchQuery: filter?.searchQuery || undefined,
+					published: filter?.published || undefined,
+					unpublished: filter?.unpublished || undefined,
+				}),
+				take: first + 1,
+				skip: after ? 1 : 0,
+				cursor: after ? { id: after } : undefined,
+			})
+		},
+		extendConnection: t => {
+			t.int("totalCount", {
+				resolve: (
+					_,
+					{
+						filter,
+					}: { filter?: NexusGenInputs["GetMyPostsFilterInput"] | null },
+					{ prisma, session }
+				) =>
+					prisma.postModel.count({
+						where: postsFilterWhereClause({
+							authorIds: [session.userId!] || undefined,
+							searchQuery: filter?.searchQuery || undefined,
+							published: filter?.published || undefined,
+							unpublished: filter?.unpublished || undefined,
+						}),
+					}),
+			})
 		},
 	})
 })

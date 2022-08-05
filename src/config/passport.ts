@@ -48,7 +48,6 @@ passport.use(
 )
 
 passport.serializeUser((user, done) => {
-	console.log("ser", user)
 	done(null, user)
 })
 

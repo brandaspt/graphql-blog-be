@@ -47,6 +47,11 @@ declare global {
 }
 
 export interface NexusGenInputs {
+  GetMyPostsFilterInput: { // input type
+    published: boolean | null; // Boolean
+    searchQuery?: string | null; // String
+    unpublished: boolean | null; // Boolean
+  }
   GetPublishedPostsFilterInput: { // input type
     authorIds?: string[] | null; // [ID!]
     searchQuery?: string | null; // String
@@ -93,6 +98,10 @@ export interface NexusGenObjects {
     node: NexusGenRootTypes['Post']; // Post!
   }
   Query: {};
+  QueryGetMyPosts_Connection: { // root type
+    edges: NexusGenRootTypes['PostEdge'][]; // [PostEdge!]!
+    pageInfo: NexusGenRootTypes['PageInfo']; // PageInfo!
+  }
   QueryGetPublishedPosts_Connection: { // root type
     edges: NexusGenRootTypes['PostEdge'][]; // [PostEdge!]!
     pageInfo: NexusGenRootTypes['PageInfo']; // PageInfo!
@@ -153,10 +162,16 @@ export interface NexusGenFieldTypes {
     node: NexusGenRootTypes['Post']; // Post!
   }
   Query: { // field return type
+    getMyPosts: NexusGenRootTypes['QueryGetMyPosts_Connection']; // QueryGetMyPosts_Connection!
     getPost: NexusGenRootTypes['Post'] | null; // Post
     getPublishedPosts: NexusGenRootTypes['QueryGetPublishedPosts_Connection']; // QueryGetPublishedPosts_Connection!
     getUser: NexusGenRootTypes['User'] | null; // User
     getUserMe: NexusGenRootTypes['User'] | null; // User
+  }
+  QueryGetMyPosts_Connection: { // field return type
+    edges: NexusGenRootTypes['PostEdge'][]; // [PostEdge!]!
+    pageInfo: NexusGenRootTypes['PageInfo']; // PageInfo!
+    totalCount: number; // Int!
   }
   QueryGetPublishedPosts_Connection: { // field return type
     edges: NexusGenRootTypes['PostEdge'][]; // [PostEdge!]!
@@ -211,10 +226,16 @@ export interface NexusGenFieldTypeNames {
     node: 'Post'
   }
   Query: { // field return type name
+    getMyPosts: 'QueryGetMyPosts_Connection'
     getPost: 'Post'
     getPublishedPosts: 'QueryGetPublishedPosts_Connection'
     getUser: 'User'
     getUserMe: 'User'
+  }
+  QueryGetMyPosts_Connection: { // field return type name
+    edges: 'PostEdge'
+    pageInfo: 'PageInfo'
+    totalCount: 'Int'
   }
   QueryGetPublishedPosts_Connection: { // field return type name
     edges: 'PostEdge'
@@ -267,6 +288,11 @@ export interface NexusGenArgTypes {
     }
   }
   Query: {
+    getMyPosts: { // args
+      after?: string | null; // String
+      filter?: NexusGenInputs['GetMyPostsFilterInput'] | null; // GetMyPostsFilterInput
+      first: number; // Int!
+    }
     getPost: { // args
       id: string; // ID!
     }
